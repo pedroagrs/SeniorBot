@@ -1,0 +1,9 @@
+name: FakePlayer
+version: ${project.version}
+main: com.huck.fakeplayer.main.FakePlayerPlugin
+authors: [PedroAguiar]
+description: A Simple fake player using packets
+website: linktr.ee/ihuck
+commands:
+  fakeplayer:
+    description: Spawn npc
