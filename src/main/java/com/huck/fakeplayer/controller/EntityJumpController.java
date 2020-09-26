@@ -27,20 +27,22 @@ public class EntityJumpController extends BukkitRunnable {
 
     private final double gravity = -0.15523200451;
     private final boolean versionIsOld;
+    private final String version;
 
     public EntityJumpController(Object entityPlayer, String version) {
         this.entityPlayer = entityPlayer;
+        this.version = version;
         this.versionIsOld = version.startsWith("v1_8") || version.startsWith("v1_9") || version.startsWith("v1_10");
 
         runTaskTimer(FakePlayerPlugin.getPlugin(), 0L, 1L);
     }
 
-    public void jump() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public void jump() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
         if (versionIsOld)
             entityPlayer.getClass().getMethod("move", double.class, double.class, double.class).invoke(entityPlayer,
                     0, 0.41999998688, 0);
         else
-            moveUpdated( 0.41999998688);
+            moveUpdated(0.41999998688);
 
         calcToHighest += 0.41999998688;
         calcToGravity = gravity;
@@ -93,12 +95,23 @@ public class EntityJumpController extends BukkitRunnable {
         }
     }
 
-    protected void moveUpdated(double y) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    protected void moveUpdated(double y) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
         final Class<?> enumMoveTypeClass = NmsUtils.getNMSClass("EnumMoveType");
         assert enumMoveTypeClass != null;
         final Object move = enumMoveTypeClass.getEnumConstants()[0];
 
-        entityPlayer.getClass().getMethod("move", enumMoveTypeClass, double.class, double.class, double.class)
+        if (version.startsWith("v1_14") || version.startsWith("v1_15") || version.startsWith("v1_16")) {
+            final Class<?> vec3dClass = NmsUtils.getNMSClass("Vec3D");
+
+            assert vec3dClass != null;
+            final Object jumpVec3d = vec3dClass
+                    .getConstructor(double.class, double.class, double.class)
+                    .newInstance(0.0d, y, 0.0d);
+
+            entityPlayer.getClass().getMethod("move", enumMoveTypeClass, vec3dClass)
+                    .invoke(entityPlayer, move, jumpVec3d);
+
+        } else entityPlayer.getClass().getMethod("move", enumMoveTypeClass, double.class, double.class, double.class)
                 .invoke(entityPlayer, move, 0, y, 0);
     }
 }
