@@ -8,6 +8,8 @@ import lombok.SneakyThrows;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 
 public class EntityJumpController extends BukkitRunnable {
 
@@ -54,7 +56,14 @@ public class EntityJumpController extends BukkitRunnable {
     @Override
     public void run() {
         double highest = 1.24918707874468;
-        if (entityPlayer.getClass().getField("onGround").getBoolean(entityPlayer) && isHighest) {
+
+        boolean onGround = false;
+        if (version.startsWith("v1_16"))
+            onGround = (boolean) entityPlayer.getClass().getMethod("isOnGround").invoke(entityPlayer);
+        else
+            onGround = entityPlayer.getClass().getField("onGround").getBoolean(entityPlayer);
+
+        if (onGround && isHighest) {
             // reset jump
 
             setJumping(false);
