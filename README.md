@@ -1,4 +1,4 @@
 # FakePlayer
 A Simple bot in Java/NMS
 
-Versions tested: 1.8, 1.9, 1.10, 1.11, 1.12, 1.13, 1.14, 1.15, 1.16.3
+Versions tested: 1.8x, 1.9x, 1.10x, 1.11x, 1.12x, 1.13x, 1.14x, 1.15x, 1.16x
