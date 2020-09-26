@@ -122,7 +122,7 @@ public class FakePlayerCommand implements CommandExecutor {
                 interactClass
         );
 
-        if(version.startsWith("v1_14"))
+        if(version.startsWith("v1_14") || version.startsWith("v1_15") || version.startsWith("v1_16"))
             worldServerClass = NmsUtils.getNMSClass("WorldServer");
 
         assert interactClass != null;
