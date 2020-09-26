@@ -1,6 +1,7 @@
 package com.huck.fakeplayer.controller;
 
 import com.huck.fakeplayer.main.FakePlayerPlugin;
+import com.huck.fakeplayer.utils.NmsUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -25,16 +26,21 @@ public class EntityJumpController extends BukkitRunnable {
     // 5 = 0.10408037809
 
     private final double gravity = -0.15523200451;
+    private final boolean versionIsOld;
 
-    public EntityJumpController(Object entityPlayer) {
+    public EntityJumpController(Object entityPlayer, String version) {
         this.entityPlayer = entityPlayer;
+        this.versionIsOld = version.startsWith("v1_8") || version.startsWith("v1_9") || version.startsWith("v1_10");
 
         runTaskTimer(FakePlayerPlugin.getPlugin(), 0L, 1L);
     }
 
     public void jump() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        entityPlayer.getClass().getMethod("move", double.class, double.class, double.class).invoke(entityPlayer,
-                0, 0.41999998688, 0);
+        if (versionIsOld)
+            entityPlayer.getClass().getMethod("move", double.class, double.class, double.class).invoke(entityPlayer,
+                    0, 0.41999998688, 0);
+        else
+            moveUpdated( 0.41999998688);
 
         calcToHighest += 0.41999998688;
         calcToGravity = gravity;
@@ -60,8 +66,12 @@ public class EntityJumpController extends BukkitRunnable {
             // gravity
             calcToGravity += 0.08;
 
-            entityPlayer.getClass().getMethod("move", double.class, double.class, double.class)
-                    .invoke(entityPlayer, 0, gravity - calcToGravity, 0);
+            if (versionIsOld)
+                entityPlayer.getClass().getMethod("move", double.class, double.class, double.class)
+                        .invoke(entityPlayer, 0, gravity - calcToGravity, 0);
+            else
+                moveUpdated(gravity - calcToGravity);
+
         } else if (calcToHighest < highest && isJumping) {
 
             // jump
@@ -69,8 +79,11 @@ public class EntityJumpController extends BukkitRunnable {
             calcToHighest += jump;
 
             if (calcToHighest < highest)
-                entityPlayer.getClass().getMethod("move", double.class, double.class, double.class)
-                        .invoke(entityPlayer, 0, jump, 0);
+                if (versionIsOld)
+                    entityPlayer.getClass().getMethod("move", double.class, double.class, double.class)
+                            .invoke(entityPlayer, 0, jump, 0);
+                else
+                    moveUpdated(jump);
 
         } else if (calcToHighest >= highest) {
             // prepare to gravity
@@ -78,5 +91,14 @@ public class EntityJumpController extends BukkitRunnable {
             isHighest = true;
 
         }
+    }
+
+    protected void moveUpdated(double y) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        final Class<?> enumMoveTypeClass = NmsUtils.getNMSClass("EnumMoveType");
+        assert enumMoveTypeClass != null;
+        final Object move = enumMoveTypeClass.getEnumConstants()[0];
+
+        entityPlayer.getClass().getMethod("move", enumMoveTypeClass, double.class, double.class, double.class)
+                .invoke(entityPlayer, move, 0, y, 0);
     }
 }
