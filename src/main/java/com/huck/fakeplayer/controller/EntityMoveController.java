@@ -4,11 +4,7 @@ import com.huck.fakeplayer.main.FakePlayerPlugin;
 import com.huck.fakeplayer.utils.NmsUtils;
 import lombok.Getter;
 import lombok.SneakyThrows;
-import net.minecraft.server.v1_15_R1.PacketPlayInEntityAction;
-import net.minecraft.server.v1_15_R1.PacketPlayOutAnimation;
-import net.minecraft.server.v1_15_R1.Entity;
 
-import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.lang.reflect.InvocationTargetException;
@@ -59,6 +55,7 @@ public class EntityMoveController extends BukkitRunnable {
                 else { // MAIN_HAND / OFF_HAND
                     final Class<?> enumHandClass = NmsUtils.getNMSClass("EnumHand");
 
+                    assert enumHandClass != null;
                     final Object mainHand = enumHandClass.getEnumConstants()[0];
 
                     if (version.startsWith("v1_16"))
@@ -94,19 +91,22 @@ public class EntityMoveController extends BukkitRunnable {
     private final Class<?> entityPoseClass = NmsUtils.getNMSClass("EntityPose");
 
     protected void setSneakingLastVersions(boolean flag) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        Method method = null;
+        Method method;
 
         int toggle = 0;
 
         if (flag) toggle = 5;
 
-        if (version.startsWith("v1_14"))
+        assert entityHumanClass != null;
+        if (version.startsWith("v1_14")) {
             method = entityHumanClass.getDeclaredMethod("b", entityPoseClass);
-
-        else method = entityHumanClass.getDeclaredMethod("setPose", entityPoseClass);
+        } else {
+            method = entityHumanClass.getDeclaredMethod("setPose", entityPoseClass);
+        }
 
         method.setAccessible(true);
 
+        assert entityPoseClass != null;
         method.invoke(player, entityPoseClass.getEnumConstants()[toggle]);
     }
 }
