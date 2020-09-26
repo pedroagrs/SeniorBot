@@ -8,8 +8,6 @@ import lombok.SneakyThrows;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 
 public class EntityJumpController extends BukkitRunnable {
 
