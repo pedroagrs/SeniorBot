@@ -20,6 +20,7 @@ import java.util.UUID;
 
 public class FakePlayerCommand implements CommandExecutor {
 
+    private final String version = NmsUtils.getServerVersion();
     private final FakePlayerPlugin plugin = FakePlayerPlugin.getPlugin();
     private Location location;
 
@@ -65,7 +66,7 @@ public class FakePlayerCommand implements CommandExecutor {
             if (fake != null) {
                 fake.getClass().getMethod("reset").invoke(fake);
 
-                new EntityMoveController(fake);
+                new EntityMoveController(fake, version);
             }
 
         } else {
@@ -95,7 +96,7 @@ public class FakePlayerCommand implements CommandExecutor {
 
     // NMS IMPORTS
     private final Class<?> minecraftServerClass = NmsUtils.getNMSClass("MinecraftServer");
-    private final Class<?> worldServerClass = NmsUtils.getNMSClass("World");
+    private Class<?> worldServerClass = NmsUtils.getNMSClass("World");
     private final Class<?> entityPlayerClass = NmsUtils.getNMSClass("EntityPlayer");
     private final Class<?> entityHuman = NmsUtils.getNMSClass("EntityHuman");
     private final Class<?> entityClass = NmsUtils.getNMSClass("Entity");
@@ -120,6 +121,9 @@ public class FakePlayerCommand implements CommandExecutor {
                 GameProfile.class,
                 interactClass
         );
+
+        if(version.startsWith("v1_14"))
+            worldServerClass = NmsUtils.getNMSClass("WorldServer");
 
         assert interactClass != null;
         Constructor<?> interactConstructor = interactClass.getConstructor(worldServerClass);
