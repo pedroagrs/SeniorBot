@@ -1,6 +1,7 @@
 package com.huck.fakeplayer.controller;
 
 import com.huck.fakeplayer.main.FakePlayerPlugin;
+import com.huck.fakeplayer.utils.NmsUtils;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -14,6 +15,8 @@ public class EntityMoveController extends BukkitRunnable {
     private int step;
 
     private final EntityJumpController jumpController;
+
+    private final String version = NmsUtils.getServerVersion();
 
     public EntityMoveController(Object player) {
         this.player = player;
@@ -37,7 +40,15 @@ public class EntityMoveController extends BukkitRunnable {
                 player.getClass().getMethod("setSneaking", boolean.class).invoke(player, true);
                 break;
             case 6:
-                player.getClass().getMethod("bw").invoke(player);
+                if (version.startsWith("v1_8")) // MAIN_HAND
+                    player.getClass().getMethod("bw").invoke(player);
+                else { // MAIN_HAND / OFF_HAND
+                    final Class<?> enumHandClass = NmsUtils.getNMSClass("EnumHand");
+
+                    final Object mainHand = enumHandClass.getEnumConstants()[0];
+
+                    player.getClass().getMethod("a", enumHandClass).invoke(player, mainHand);
+                }
                 break;
             case 4:
             case 7:
